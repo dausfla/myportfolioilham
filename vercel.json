@@ -1,22 +1,13 @@
 {
   "functions": {
-    "api/*.php": {
+    "api/index.php": {
       "runtime": "vercel-php@0.7.4",
       "includeFiles": "**"
     }
   },
   "routes": [
-    { "src": "^/api/(.*)",                       "dest": "/api/$1" },
-    { "src": "^/$",                              "dest": "/api/index.php" },
-    { "src": "^/about/?$",                       "dest": "/api/about.php" },
-    { "src": "^/work/?$",                        "dest": "/api/work.php" },
-    { "src": "^/contact/?$",                     "dest": "/api/contact.php" },
-    { "src": "^/admin/?$",                       "dest": "/api/admin.php" },
-    { "src": "^/admin\\.php(.*)$",               "dest": "/api/admin.php$1" },
-    { "src": "^/project/([a-zA-Z0-9\\-]+)/?$",   "dest": "/api/project.php?slug=$1" },
-    { "src": "^/assets/(.*)$",                   "dest": "/assets/$1" },
-    { "src": "^/data/(.*)$",                     "dest": "/data/$1" },
-    { "src": "^/([a-zA-Z0-9_\\-]+\\.php)(.*)$",  "dest": "/api/$1$2" },
-    { "src": ".*",                               "dest": "/api/404.php" }
+    { "src": "^/assets/(.*)$", "dest": "/assets/$1" },
+    { "src": "^/data/(.*)$",   "dest": "/data/$1" },
+    { "src": ".*",             "dest": "/api/index.php" }
   ]
 }
