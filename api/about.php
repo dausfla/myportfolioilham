@@ -1,3 +1,8 @@
 <?php
 define('BASE_DIR', dirname(__DIR__));
-require_once BASE_DIR . '/about.php';
+try {
+    require_once BASE_DIR . '/about.php';
+} catch (\Throwable $e) {
+    http_response_code(500);
+    echo '<h1>Error</h1><pre>' . htmlspecialchars($e->getMessage()) . '</pre>';
+}

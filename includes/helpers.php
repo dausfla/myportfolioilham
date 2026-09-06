@@ -17,11 +17,16 @@ if (!function_exists('e')) {
 
 if (!function_exists('slugify')) {
     /**
-     * Convert string to URL friendly slug
+     * Convert string to URL friendly slug (no iconv dependency)
      */
     function slugify(string $text): string {
         $text = preg_replace('~[^\pL\d]+~u', '-', $text);
-        $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
+        // Transliterate: try intl extension first, then iconv, then regex-only fallback
+        if (function_exists('transliterator_transliterate')) {
+            $text = transliterator_transliterate('Any-Latin; Latin-ASCII; Lower()', $text);
+        } elseif (function_exists('iconv')) {
+            $text = @iconv('utf-8', 'us-ascii//TRANSLIT', $text) ?: $text;
+        }
         $text = preg_replace('~[^-\w]+~', '', $text);
         $text = trim($text, '-');
         $text = preg_replace('~-+~', '-', $text);

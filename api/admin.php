@@ -1,3 +1,12 @@
 <?php
+/**
+ * Vercel Serverless Entry Point — Admin Dashboard
+ */
 define('BASE_DIR', dirname(__DIR__));
-require_once BASE_DIR . '/admin.php';
+
+try {
+    require_once BASE_DIR . '/admin.php';
+} catch (\Throwable $e) {
+    http_response_code(500);
+    echo '<h1>Error</h1><pre>' . htmlspecialchars($e->getMessage()) . '</pre>';
+}

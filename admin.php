@@ -6,7 +6,10 @@ declare(strict_types=1);
  * Ilham Ramadhan Setiawan Portfolio
  */
 
-session_start();
+// Safe session start — serverless environments may not support sessions
+if (session_status() === PHP_SESSION_NONE) {
+    @session_start();
+}
 require_once __DIR__ . '/config/config.php';
 
 use App\Services\CacheService;
