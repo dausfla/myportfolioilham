@@ -123,6 +123,11 @@
     padding: 0 5vw;
   }
 
+  .brand-logo {
+    font-size: 1.05rem;
+    letter-spacing: 0.22em;
+  }
+
   .hero-title {
     font-size: clamp(1.5rem, 6vw, 2.4rem);
   }
@@ -151,12 +156,19 @@
     font-size: 0.72rem;
     padding: 0.35rem 0.7rem;
   }
+
+  .drive-cropped-iframe {
+    top: -52px;
+    bottom: -52px;
+    height: calc(100% + 104px);
+  }
 }
 
 /* 375px Compact Mobile */
 @media (max-width: 375px) {
   .brand-logo {
-    font-size: 0.82rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.18em;
   }
   .hero-title {
     font-size: 1.4rem;

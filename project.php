@@ -9,6 +9,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/config/config.php';
 
 use App\Services\GoogleSheetsService;
+use App\Services\GoogleDriveService;
 
 $slug = trim((string) ($_GET['slug'] ?? ''));
 
@@ -78,38 +79,49 @@ require_once __DIR__ . '/includes/navigation.php';
                 <?php foreach ($project->media as $media): ?>
                     <div class="media-item-wrap">
                         <?php if ($media->isVideo()): 
-                            $isDriveEmbed = str_contains($media->url, 'drive.google.com') && str_contains($media->url, '/preview');
+                            $isDriveEmbed = str_contains($media->url, 'drive.google.com');
+                            $embedUrl = GoogleDriveService::getDriveVideoEmbedUrl($media->url);
                         ?>
-                            <!-- Video Player — Google Drive or Native MP4 -->
-                            <div class="video-player-container">
+                            <!-- Sleek Spoiler Video Player (No Timeline Overlap Clutter) -->
+                            <div class="video-player-card" data-video-type="<?= $isDriveEmbed ? 'drive' : 'mp4'; ?>">
                                 <?php if ($isDriveEmbed): ?>
-                                    <!-- Google Drive Embed Player with Clean Top-Crop -->
-                                    <div class="drive-video-wrapper">
+                                    <div class="spoiler-video-wrapper">
                                         <iframe
-                                            src="<?= e($media->url); ?>"
-                                            class="drive-video-iframe"
+                                            src="<?= e($embedUrl); ?>"
+                                            class="drive-cropped-iframe"
                                             allow="autoplay; encrypted-media; fullscreen"
                                             allowfullscreen
-                                            loading="lazy"
                                             title="<?= e($media->title ?: $project->title); ?>">
                                         </iframe>
+                                        <div class="video-interactive-overlay">
+                                            <div class="spoiler-badge">PREVIEW SPOILER</div>
+                                            <button class="custom-play-pause-btn" aria-label="Putar / Hentikan Video">
+                                                <span class="btn-icon">&#9658;</span>
+                                                <span class="btn-text">PUTAR / JEDA VIDEO</span>
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div class="video-touch-toolbar">
-                                        <span class="video-touch-label">&#9658; TEKAN UTK PUTAR / HENTIKAN</span>
-                                        <a href="<?= e($media->url); ?>" target="_blank" rel="noopener" class="video-fullscreen-btn">
+                                    <div class="video-control-bar">
+                                        <div class="video-status-text">&bull; PREVIEW VIDEO KARYA</div>
+                                        <a href="<?= e($embedUrl); ?>" target="_blank" rel="noopener" class="video-external-link">
                                             LAYAR PENUH &nearr;
                                         </a>
                                     </div>
                                 <?php else: ?>
-                                    <!-- Direct MP4 Video Player -->
-                                    <div class="custom-mp4-wrapper">
-                                        <video poster="<?= e($media->thumbnailUrl); ?>" preload="metadata" controls playsinline>
+                                    <div class="spoiler-video-wrapper">
+                                        <video poster="<?= e($media->thumbnailUrl); ?>" autoplay loop muted playsinline class="spoiler-mp4-video">
                                             <source src="<?= e($media->url); ?>" type="video/mp4">
-                                            Browser Anda tidak mendukung pemutar video ini.
                                         </video>
-                                        <div class="video-controls-overlay">
-                                            <button class="play-trigger-btn" aria-label="Putar Video">&#9658;</button>
+                                        <div class="video-interactive-overlay">
+                                            <div class="spoiler-badge">MP4 VIDEO</div>
+                                            <button class="custom-play-pause-btn" aria-label="Putar / Hentikan Video">
+                                                <span class="btn-icon">&#9658;</span>
+                                                <span class="btn-text">PUTAR &amp; UNMUTE</span>
+                                            </button>
                                         </div>
+                                    </div>
+                                    <div class="video-control-bar">
+                                        <div class="video-status-text">&bull; DOKUMENTASI VISUAL</div>
                                     </div>
                                 <?php endif; ?>
                             </div>

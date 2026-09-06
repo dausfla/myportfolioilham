@@ -68,40 +68,65 @@
     });
   }
 
-  // MP4 Video Controls Overlay Play/Pause Trigger
+  // Spoiler Video Players (Google Drive & MP4)
   function initVideoPlayers() {
-    const mp4Containers = document.querySelectorAll('.custom-mp4-wrapper');
-    mp4Containers.forEach(container => {
-      const video = container.querySelector('video');
-      const overlay = container.querySelector('.video-controls-overlay');
-      const playBtn = container.querySelector('.play-trigger-btn');
+    const videoCards = document.querySelectorAll('.video-player-card');
+    videoCards.forEach(card => {
+      const type = card.getAttribute('data-video-type');
+      const overlay = card.querySelector('.video-interactive-overlay');
+      const playBtn = card.querySelector('.custom-play-pause-btn');
+      const btnText = card.querySelector('.btn-text');
+      const btnIcon = card.querySelector('.btn-icon');
+      const mp4Video = card.querySelector('video');
 
-      if (!video || !overlay) return;
+      if (!overlay) return;
 
-      function togglePlay() {
-        if (video.paused) {
-          video.play();
-          overlay.style.opacity = '0';
-          overlay.style.pointerEvents = 'none';
+      let isPlaying = false;
+
+      function handleToggle(e) {
+        if (e) e.stopPropagation();
+
+        if (type === 'mp4' && mp4Video) {
+          if (mp4Video.paused) {
+            mp4Video.muted = false;
+            mp4Video.play();
+            isPlaying = true;
+            overlay.classList.add('active-playing');
+            if (btnText) btnText.textContent = 'JEDA VIDEO';
+            if (btnIcon) btnIcon.innerHTML = '&#10074;&#10074;';
+          } else {
+            mp4Video.pause();
+            isPlaying = false;
+            overlay.classList.remove('active-playing');
+            if (btnText) btnText.textContent = 'PUTAR & UNMUTE';
+            if (btnIcon) btnIcon.innerHTML = '&#9658;';
+          }
         } else {
-          video.pause();
-          overlay.style.opacity = '1';
-          overlay.style.pointerEvents = 'auto';
+          // Google Drive video embed
+          if (!isPlaying) {
+            isPlaying = true;
+            overlay.classList.add('active-playing');
+            if (btnText) btnText.textContent = 'JEDA / KELUAR';
+            if (btnIcon) btnIcon.innerHTML = '&#10074;&#10074;';
+          } else {
+            isPlaying = false;
+            overlay.classList.remove('active-playing');
+            if (btnText) btnText.textContent = 'PUTAR / JEDA VIDEO';
+            if (btnIcon) btnIcon.innerHTML = '&#9658;';
+          }
         }
       }
 
-      if (playBtn) playBtn.addEventListener('click', togglePlay);
-      video.addEventListener('click', togglePlay);
+      overlay.addEventListener('click', handleToggle);
+      if (playBtn) playBtn.addEventListener('click', handleToggle);
 
-      video.addEventListener('pause', () => {
-        overlay.style.opacity = '1';
-        overlay.style.pointerEvents = 'auto';
-      });
-
-      video.addEventListener('play', () => {
-        overlay.style.opacity = '0';
-        overlay.style.pointerEvents = 'none';
-      });
+      if (mp4Video) {
+        mp4Video.addEventListener('pause', () => {
+          overlay.classList.remove('active-playing');
+          if (btnText) btnText.textContent = 'PUTAR VIDEO';
+          if (btnIcon) btnIcon.innerHTML = '&#9658;';
+        });
+      }
     });
   }
 
