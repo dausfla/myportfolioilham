@@ -1,0 +1,9 @@
+{
+  "name": "ilham-ramadhan-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Portfolio Videografer & Editor Ilham Ramadhan Setiawan",
+  "dependencies": {
+    "vercel-php": "^0.7.2"
+  }
+}
