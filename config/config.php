@@ -83,11 +83,12 @@ require_once BASE_DIR . '/includes/helpers.php';
 
 // App Settings
 $appEnv = env('APP_ENV', 'development');
-if ($appEnv === 'development') {
+$isVercelEnv = function_exists('is_vercel') && is_vercel();
+if ($appEnv === 'development' && !$isVercelEnv) {
     error_reporting(E_ALL);
     ini_set('display_errors', '1');
 } else {
-    error_reporting(0);
+    error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
     ini_set('display_errors', '0');
 }
 

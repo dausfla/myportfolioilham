@@ -12,7 +12,11 @@ class CacheService {
     private int $ttl;
 
     public function __construct(string $cacheDir = null, int $ttl = 300) {
-        $this->cacheDir = $cacheDir ?? (BASE_DIR . '/cache');
+        if ($cacheDir === null) {
+            $isVercel = !empty($_SERVER['VERCEL']) || !empty(getenv('VERCEL')) || (isset($_SERVER['SCRIPT_NAME']) && str_contains($_SERVER['SCRIPT_NAME'], '/api/'));
+            $cacheDir = $isVercel ? '/tmp/cache' : (BASE_DIR . '/cache');
+        }
+        $this->cacheDir = $cacheDir;
         $this->ttl = $ttl;
 
         if (!is_dir($this->cacheDir)) {
