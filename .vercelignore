@@ -1,4 +1,0 @@
-.git
-.env*
-cache/*.json
-!cache/.gitkeep
