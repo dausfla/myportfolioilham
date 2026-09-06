@@ -57,6 +57,10 @@ function readJsonFile(string $filePath): array {
 }
 
 function writeJsonFile(string $filePath, array $data): bool {
+    // Vercel has a read-only filesystem — writes cannot persist
+    if (is_vercel()) {
+        return false;
+    }
     $dir = dirname($filePath);
     if (!is_dir($dir)) {
         @mkdir($dir, 0777, true);
@@ -431,6 +435,14 @@ table.admin-table th {
         <?php if (!empty($authError)): ?>
             <div class="alert-error"><?= e($authError); ?></div>
         <?php endif; ?>
+
+        <?php if (is_vercel()): ?>
+            <div class="alert-error" style="border-left: 4px solid #f59e0b; background: rgba(245,158,11,0.1); color: #f59e0b; margin-bottom: 1.5rem;">
+                ⚠️ <strong>MODE READ-ONLY (Vercel)</strong> — Perubahan tidak dapat disimpan di Vercel karena filesystem bersifat read-only.
+                Untuk mengelola konten, edit file <code>data/profile.json</code>, <code>data/projects.json</code>, dan <code>data/media.json</code> langsung di repository GitHub, lalu redeploy.
+            </div>
+        <?php endif; ?>
+
 
         <!-- TABS NAVIGATION -->
         <div class="admin-tabs">

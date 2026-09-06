@@ -30,26 +30,61 @@ if (!function_exists('slugify')) {
     }
 }
 
+if (!function_exists('is_vercel')) {
+    /**
+     * Detect if running on Vercel serverless environment
+     */
+    function is_vercel(): bool {
+        // Vercel sets these env vars; also check APP_URL for vercel.app domain
+        if (!empty($_SERVER['VERCEL']) || !empty(getenv('VERCEL'))) {
+            return true;
+        }
+        $appUrl = env('APP_URL', '');
+        if (!empty($appUrl) && (str_contains($appUrl, 'vercel.app') || str_contains($appUrl, 'vercel.com'))) {
+            return true;
+        }
+        // Check if script is served from /api/ directory (Vercel entry points)
+        $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+        return str_contains($scriptName, '/api/');
+    }
+}
+
 if (!function_exists('project_url')) {
     /**
      * Generate project detail URL
      */
     function project_url(string $slug): string {
+        if (is_vercel()) {
+            return base_url('project/' . urlencode($slug));
+        }
         return base_url('project.php?slug=' . urlencode($slug));
     }
 }
 
 if (!function_exists('route_url')) {
     /**
-     * Generate route URL (/work, /about, /contact)
+     * Generate route URL — clean URLs on Vercel, .php URLs on XAMPP
      */
     function route_url(string $route): string {
         $route = trim($route, '/');
-        if (empty($route) || $route === 'index') {
-            return base_url('index.php');
-        }
-        // Extract path part only (before ? query string) to check extension
+
+        // Extract path part only (before ? query string)
         $pathPart = explode('?', $route, 2)[0];
+        $queryPart = isset(explode('?', $route, 2)[1]) ? '?' . explode('?', $route, 2)[1] : '';
+
+        // Strip .php from path for clean URL on Vercel
+        $cleanPath = str_ends_with($pathPart, '.php') ? substr($pathPart, 0, -4) : $pathPart;
+
+        if (empty($cleanPath) || $cleanPath === 'index') {
+            return base_url('');
+        }
+
+        if (is_vercel()) {
+            // On Vercel: generate clean URLs (/about, /work, /admin?action=logout)
+            return base_url($cleanPath . $queryPart);
+        }
+
+        // On XAMPP: generate .php URLs (about.php, work.php)
         if (str_ends_with($pathPart, '.php')) {
             return base_url($route);
         }

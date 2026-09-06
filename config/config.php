@@ -6,7 +6,10 @@ declare(strict_types=1);
  * Ilham Ramadhan Setiawan Portfolio
  */
 
-define('BASE_DIR', dirname(__DIR__));
+// BASE_DIR: defined by api/ entry points on Vercel, or here on XAMPP/local
+if (!defined('BASE_DIR')) {
+    define('BASE_DIR', dirname(__DIR__));
+}
 
 // Native PSR-4 Autoloader for App\Models and App\Services (No Composer required!)
 spl_autoload_register(function (string $class): void {
