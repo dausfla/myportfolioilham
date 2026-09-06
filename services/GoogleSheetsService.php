@@ -21,7 +21,7 @@ class GoogleSheetsService {
         $this->cache = $cache ?? new CacheService(BASE_DIR . '/cache', $this->cacheTtl);
 
         // Check if manual cache refresh trigger is passed in URL (?refresh=1 or ?clear_cache=1)
-        if (isset($_GET['refresh']) || isset($_GET['clear_cache']) || $this->cacheTtl <= 0) {
+        if (($this->cacheTtl > 0) && (isset($_GET['refresh']) || isset($_GET['clear_cache']))) {
             $this->cache->clear();
         }
     }
