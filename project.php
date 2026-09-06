@@ -77,16 +77,33 @@ require_once __DIR__ . '/includes/navigation.php';
             <?php else: ?>
                 <?php foreach ($project->media as $media): ?>
                     <div class="media-item-wrap">
-                        <?php if ($media->isVideo()): ?>
-                            <!-- Custom Responsive Video Player -->
+                        <?php if ($media->isVideo()): 
+                            $isDriveEmbed = str_contains($media->url, 'drive.google.com') && str_contains($media->url, '/preview');
+                        ?>
+                            <!-- Video Player — iframe for Drive, <video> for direct mp4 -->
                             <div class="video-player-container" data-cursor="PUTAR">
-                                <video poster="<?= e($media->thumbnailUrl); ?>" preload="none" controls>
-                                    <source src="<?= e($media->url); ?>" type="video/mp4">
-                                    Browser Anda tidak mendukung pemutar video ini.
-                                </video>
-                                <div class="video-controls-overlay">
-                                    <button class="play-trigger-btn" aria-label="Putar Video">&#9658;</button>
-                                </div>
+                                <?php if ($isDriveEmbed): ?>
+                                    <!-- Google Drive Embed Player -->
+                                    <div class="drive-video-wrap" style="position:relative; width:100%; padding-bottom:56.25%; height:0; overflow:hidden; background:#000;">
+                                        <iframe
+                                            src="<?= e($media->url); ?>"
+                                            style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;"
+                                            allow="autoplay; encrypted-media"
+                                            allowfullscreen
+                                            loading="lazy"
+                                            title="<?= e($media->title ?: $project->title); ?>">
+                                        </iframe>
+                                    </div>
+                                <?php else: ?>
+                                    <!-- Direct MP4 Video Player -->
+                                    <video poster="<?= e($media->thumbnailUrl); ?>" preload="none" controls>
+                                        <source src="<?= e($media->url); ?>" type="video/mp4">
+                                        Browser Anda tidak mendukung pemutar video ini.
+                                    </video>
+                                    <div class="video-controls-overlay">
+                                        <button class="play-trigger-btn" aria-label="Putar Video">&#9658;</button>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         <?php else: ?>
                             <!-- Editorial Photo Gallery Item -->

@@ -67,6 +67,38 @@ class GoogleDriveService {
     }
 
     /**
+     * Get Google Drive video embed URL for iframe playback
+     * Converts any Drive share link to /file/d/ID/preview format
+     */
+    public static function getDriveVideoEmbedUrl(?string $url): ?string {
+        if (empty($url)) {
+            return null;
+        }
+
+        $fileId = static::getDriveFileId($url);
+        if ($fileId) {
+            return "https://drive.google.com/file/d/{$fileId}/preview";
+        }
+
+        // If it's a direct .mp4 URL (not Drive), return as-is for <video> tag
+        if (filter_var($url, FILTER_VALIDATE_URL)) {
+            return $url;
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if a URL is a Google Drive URL
+     */
+    public static function isDriveUrl(?string $url): bool {
+        if (empty($url)) return false;
+        return str_contains($url, 'drive.google.com') ||
+               str_contains($url, 'docs.google.com') ||
+               str_contains($url, 'lh3.googleusercontent.com');
+    }
+
+    /**
      * Get direct Google Drive image display URL
      */
     public static function getDriveImageUrl(?string $url, int $width = 1920): string {

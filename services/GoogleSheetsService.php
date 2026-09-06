@@ -84,7 +84,18 @@ class GoogleSheetsService {
                     $media->url = GoogleDriveService::getDriveImageUrl($media->url);
                     $media->thumbnailUrl = GoogleDriveService::getDriveThumbnailUrl($media->thumbnailUrl ?: $media->url);
                 } else {
-                    $media->thumbnailUrl = GoogleDriveService::getDriveThumbnailUrl($media->thumbnailUrl);
+                    // For videos: convert Drive share URL to embed/preview URL
+                    $embedUrl = GoogleDriveService::getDriveVideoEmbedUrl($media->url);
+                    if ($embedUrl) {
+                        $media->url = $embedUrl;
+                    }
+                    // Thumbnail for video poster
+                    if (!empty($media->thumbnailUrl)) {
+                        $media->thumbnailUrl = GoogleDriveService::getDriveThumbnailUrl($media->thumbnailUrl);
+                    } elseif (GoogleDriveService::getDriveFileId($media->url)) {
+                        // Auto-generate thumbnail from Drive file if no explicit thumbnail
+                        $media->thumbnailUrl = GoogleDriveService::getDriveThumbnailUrl($media->url);
+                    }
                 }
                 $mediaList[] = $media;
             }
