@@ -292,31 +292,52 @@ button {
 .mobile-menu-toggle {
   display: none;
   flex-direction: column;
-  gap: 6px;
-  padding: 10px;
+  justify-content: center;
+  align-items: center;
+  width: 38px;
+  height: 38px;
+  gap: 5px;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
   z-index: 1001;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-.mobile-menu-toggle span {
+.mobile-menu-toggle:hover, .mobile-menu-toggle.active {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: #ffffff;
+}
+
+.mobile-menu-toggle .hamburger-bar {
   display: block;
-  width: 26px;
-  height: 1px;
+  width: 20px;
+  height: 2px;
   background-color: var(--text-main);
+  border-radius: 2px;
   transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.mobile-menu-toggle.active .hamburger-bar:nth-child(1) {
+  transform: translateY(3.5px) rotate(45deg);
+}
+
+.mobile-menu-toggle.active .hamburger-bar:nth-child(2) {
+  transform: translateY(-3.5px) rotate(-45deg);
 }
 
 .mobile-overlay {
   position: fixed;
   inset: 0;
-  background-color: #000000;
+  background-color: #050505;
   z-index: 950;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: 4vw;
+  padding: 2.5rem 5vw 4rem 5vw;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.5s var(--ease-out-expo), visibility 0.5s var(--ease-out-expo);
+  transition: opacity 0.4s var(--ease-out-expo), visibility 0.4s var(--ease-out-expo);
 }
 
 .mobile-overlay.active {
@@ -324,10 +345,53 @@ button {
   visibility: visible;
 }
 
+.mobile-overlay-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1.8rem;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: auto;
+}
+
+.mobile-overlay-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.mobile-overlay-close-btn {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--border-color);
+  padding: 0.4rem 0.9rem;
+  border-radius: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: background-color 0.2s ease;
+}
+
+.mobile-overlay-close-btn span {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.mobile-overlay-close-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
 .mobile-nav-links {
   display: flex;
   flex-direction: column;
   gap: 1.8rem;
+  margin-bottom: auto;
 }
 
 .mobile-nav-link {
@@ -624,16 +688,77 @@ button {
 
 .video-player-container {
   width: 100%;
-  aspect-ratio: 16 / 9;
   position: relative;
   background-color: #000000;
+  border-radius: 8px;
   overflow: hidden;
+  border: 1px solid var(--border-color);
 }
 
-.video-player-container video {
+.drive-video-wrapper {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  background: #000000;
+}
+
+.drive-video-iframe {
+  position: absolute;
+  top: -46px;
+  left: 0;
+  width: 100%;
+  height: calc(100% + 46px);
+  border: none;
+}
+
+.video-touch-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.2rem;
+  background-color: #0d0d0d;
+  border-top: 1px solid var(--border-color);
+}
+
+.video-touch-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.video-fullscreen-btn {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--border-color);
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.video-fullscreen-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: #ffffff;
+}
+
+.custom-mp4-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background-color: #000000;
+}
+
+.custom-mp4-wrapper video {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .video-controls-overlay {
@@ -647,21 +772,21 @@ button {
 }
 
 .play-trigger-btn {
-  width: 75px;
-  height: 75px;
+  width: 65px;
+  height: 65px;
   border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.95);
   color: #000000;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 800;
   transition: transform 0.3s var(--ease-out-expo), background-color 0.3s ease;
 }
 
 .play-trigger-btn:hover {
-  transform: scale(1.12);
+  transform: scale(1.1);
   background-color: #ffffff;
 }
 

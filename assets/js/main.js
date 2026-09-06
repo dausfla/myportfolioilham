@@ -30,26 +30,77 @@
   // Mobile Overlay Menu Toggle
   function initMobileMenu() {
     const toggleBtn = document.getElementById('mobile-menu-toggle');
+    const closeBtn = document.getElementById('mobile-overlay-close');
     const overlay = document.getElementById('mobile-overlay');
     
-    if (!toggleBtn || !overlay) return;
+    if (!overlay) return;
 
-    toggleBtn.addEventListener('click', () => {
-      const isActive = overlay.classList.contains('active');
-      if (isActive) {
-        overlay.classList.remove('active');
-        document.body.style.overflow = '';
-      } else {
-        overlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
-      }
-    });
+    function openMenu() {
+      overlay.classList.add('active');
+      if (toggleBtn) toggleBtn.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMenu() {
+      overlay.classList.remove('active');
+      if (toggleBtn) toggleBtn.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => {
+        const isActive = overlay.classList.contains('active');
+        if (isActive) {
+          closeMenu();
+        } else {
+          openMenu();
+        }
+      });
+    }
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', closeMenu);
+    }
 
     const mobileLinks = overlay.querySelectorAll('a');
     mobileLinks.forEach(link => {
-      link.addEventListener('click', () => {
-        overlay.classList.remove('active');
-        document.body.style.overflow = '';
+      link.addEventListener('click', closeMenu);
+    });
+  }
+
+  // MP4 Video Controls Overlay Play/Pause Trigger
+  function initVideoPlayers() {
+    const mp4Containers = document.querySelectorAll('.custom-mp4-wrapper');
+    mp4Containers.forEach(container => {
+      const video = container.querySelector('video');
+      const overlay = container.querySelector('.video-controls-overlay');
+      const playBtn = container.querySelector('.play-trigger-btn');
+
+      if (!video || !overlay) return;
+
+      function togglePlay() {
+        if (video.paused) {
+          video.play();
+          overlay.style.opacity = '0';
+          overlay.style.pointerEvents = 'none';
+        } else {
+          video.pause();
+          overlay.style.opacity = '1';
+          overlay.style.pointerEvents = 'auto';
+        }
+      }
+
+      if (playBtn) playBtn.addEventListener('click', togglePlay);
+      video.addEventListener('click', togglePlay);
+
+      video.addEventListener('pause', () => {
+        overlay.style.opacity = '1';
+        overlay.style.pointerEvents = 'auto';
+      });
+
+      video.addEventListener('play', () => {
+        overlay.style.opacity = '0';
+        overlay.style.pointerEvents = 'none';
       });
     });
   }
@@ -101,6 +152,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     initPreloader();
     initMobileMenu();
+    initVideoPlayers();
     initCategoryFilter();
     initBackToTop();
   });
