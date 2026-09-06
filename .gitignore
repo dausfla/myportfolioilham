@@ -1,0 +1,15 @@
+# Environment & Credentials (JANGAN diupload ke GitHub)
+.env
+
+# Cache files generated at runtime
+cache/*.json
+!cache/.gitkeep
+
+# Composer vendor
+/vendor/
+
+# System / OS
+.DS_Store
+.idea/
+.vscode/
+*.log

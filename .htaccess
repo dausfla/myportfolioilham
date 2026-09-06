@@ -1,0 +1,36 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Prevent directory listing
+    Options -Indexes
+
+    # Route /work to work.php
+    RewriteRule ^work/?$ work.php [L,QSA]
+
+    # Route /about to about.php
+    RewriteRule ^about/?$ about.php [L,QSA]
+
+    # Route /contact to contact.php
+    RewriteRule ^contact/?$ contact.php [L,QSA]
+
+    # Route /project/slug-name to project.php?slug=slug-name
+    RewriteRule ^project/([a-zA-Z0-9\-]+)/?$ project.php?slug=$1 [L,QSA]
+
+    # Redirect to existing files or directories
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Serve custom 404 for non-existing files/routes
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ 404.php [L]
+</IfModule>
+
+# Security Headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
