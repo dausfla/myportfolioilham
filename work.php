@@ -24,14 +24,14 @@ require_once __DIR__ . '/includes/navigation.php';
 
 <section class="section-padding" style="padding-top: calc(var(--header-height) + 40px);">
     <div class="container">
-        <!-- Header & Filter Bar matching screenshot -->
+        <!-- Header & Filter Bar -->
         <div class="works-page-header">
             <div class="works-header-text">
                 <h1 class="works-title">KARYA PILIHAN</h1>
                 <p class="works-subtitle">Koleksi proyek pilihan yang mewakili kampanye fotografi & produksi video.</p>
             </div>
 
-            <!-- Filter Pills Bar matching screenshot -->
+            <!-- Filter Pills Bar -->
             <div class="filter-pill-container">
                 <button class="filter-pill-btn active" data-filter="ALL" data-cursor="FILTER">SEMUA</button>
                 <button class="filter-pill-btn" data-filter="FOTOGRAFI" data-cursor="FILTER">FOTOGRAFI</button>
@@ -39,52 +39,41 @@ require_once __DIR__ . '/includes/navigation.php';
             </div>
         </div>
 
-        <!-- 3-Column Work Grid with Rounded Autoplay Video Cards -->
+        <!-- 3-Column Work Grid (Clean Media, No Timeline Clutter, Precise Text) -->
         <div class="work-grid">
             <?php foreach ($projects as $project): 
                 $isDriveVideo = GoogleDriveService::isDriveUrl($project->coverUrl);
-                $driveEmbedUrl = $isDriveVideo ? GoogleDriveService::getDriveVideoEmbedUrl($project->coverUrl) : null;
                 $isMp4Video = str_ends_with(strtolower($project->coverUrl), '.mp4');
+                $isVideo = $isDriveVideo || $isMp4Video;
             ?>
                 <a href="<?= project_url($project->slug); ?>" class="project-card" data-category="<?= e($project->category); ?>" data-cursor="LIHAT DETAIL">
                     <div class="project-media-wrap">
-                        <?php if ($isDriveVideo && $driveEmbedUrl): ?>
-                            <!-- Google Drive Auto-Preview Video Loop -->
-                            <div class="card-video-container">
-                                <iframe
-                                    src="<?= e($driveEmbedUrl); ?>?autoplay=1&muted=1"
-                                    class="card-drive-iframe"
-                                    allow="autoplay; encrypted-media"
-                                    loading="lazy"
-                                    title="<?= e($project->title); ?>">
-                                </iframe>
-                                <div class="card-video-overlay-shield"></div>
-                            </div>
-                        <?php elseif ($isMp4Video): ?>
-                            <!-- Direct MP4 Auto-Preview Video Loop -->
-                            <div class="card-video-container">
-                                <video autoplay loop muted playsinline class="card-mp4-video">
-                                    <source src="<?= e($project->coverUrl); ?>" type="video/mp4">
-                                </video>
-                                <div class="card-video-overlay-shield"></div>
-                            </div>
+                        <?php if ($isMp4Video): ?>
+                            <!-- Direct MP4 Video Preview (Muted, No Controls) -->
+                            <video autoplay loop muted playsinline class="card-mp4-video">
+                                <source src="<?= e($project->coverUrl); ?>" type="video/mp4">
+                            </video>
                         <?php else: ?>
-                            <!-- High-Res Photography Image Cover -->
+                            <!-- High-Res Cover Image -->
                             <img src="<?= e($project->coverUrl); ?>" alt="<?= e($project->title); ?>" class="project-cover-img" loading="lazy">
                         <?php endif; ?>
 
-                        <!-- Category Tag Badge -->
+                        <?php if ($isVideo): ?>
+                            <div class="card-play-indicator">
+                                <span class="play-icon">&#9658;</span>
+                                <span class="play-text">VIDEO</span>
+                            </div>
+                        <?php endif; ?>
+
                         <span class="card-category-badge"><?= e($project->category); ?></span>
                     </div>
 
                     <div class="project-meta">
-                        <div>
-                            <h2 class="project-title"><?= e($project->title); ?></h2>
+                        <div class="project-meta-sub">
+                            <span class="meta-cat"><?= e($project->category); ?></span>
+                            <span class="meta-year">&bull; <?= e($project->year); ?></span>
                         </div>
-                        <div class="project-details">
-                            <div><?= e($project->category); ?></div>
-                            <div><?= e($project->year); ?></div>
-                        </div>
+                        <h2 class="project-title"><?= e($project->title); ?></h2>
                     </div>
                 </a>
             <?php endforeach; ?>

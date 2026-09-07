@@ -68,44 +68,35 @@ require_once __DIR__ . '/includes/navigation.php';
         <div class="work-grid">
             <?php foreach (array_slice($featuredProjects, 0, 6) as $project): 
                 $isDriveVideo = \App\Services\GoogleDriveService::isDriveUrl($project->coverUrl);
-                $driveEmbedUrl = $isDriveVideo ? \App\Services\GoogleDriveService::getDriveVideoEmbedUrl($project->coverUrl) : null;
                 $isMp4Video = str_ends_with(strtolower($project->coverUrl), '.mp4');
+                $isVideo = $isDriveVideo || $isMp4Video;
             ?>
                 <a href="<?= project_url($project->slug); ?>" class="project-card" data-category="<?= e($project->category); ?>" data-cursor="LIHAT DETAIL">
                     <div class="project-media-wrap">
-                        <?php if ($isDriveVideo && $driveEmbedUrl): ?>
-                            <div class="card-video-container">
-                                <iframe
-                                    src="<?= e($driveEmbedUrl); ?>?autoplay=1&muted=1"
-                                    class="card-drive-iframe"
-                                    allow="autoplay; encrypted-media"
-                                    loading="lazy"
-                                    title="<?= e($project->title); ?>">
-                                </iframe>
-                                <div class="card-video-overlay-shield"></div>
-                            </div>
-                        <?php elseif ($isMp4Video): ?>
-                            <div class="card-video-container">
-                                <video autoplay loop muted playsinline class="card-mp4-video">
-                                    <source src="<?= e($project->coverUrl); ?>" type="video/mp4">
-                                </video>
-                                <div class="card-video-overlay-shield"></div>
-                            </div>
+                        <?php if ($isMp4Video): ?>
+                            <video autoplay loop muted playsinline class="card-mp4-video">
+                                <source src="<?= e($project->coverUrl); ?>" type="video/mp4">
+                            </video>
                         <?php else: ?>
                             <img src="<?= e($project->coverUrl); ?>" alt="<?= e($project->title); ?>" class="project-cover-img" loading="lazy">
+                        <?php endif; ?>
+
+                        <?php if ($isVideo): ?>
+                            <div class="card-play-indicator">
+                                <span class="play-icon">&#9658;</span>
+                                <span class="play-text">VIDEO</span>
+                            </div>
                         <?php endif; ?>
 
                         <span class="card-category-badge"><?= e($project->category); ?></span>
                     </div>
 
                     <div class="project-meta">
-                        <div>
-                            <h3 class="project-title"><?= e($project->title); ?></h3>
+                        <div class="project-meta-sub">
+                            <span class="meta-cat"><?= e($project->category); ?></span>
+                            <span class="meta-year">&bull; <?= e($project->year); ?></span>
                         </div>
-                        <div class="project-details">
-                            <div><?= e($project->category); ?></div>
-                            <div><?= e($project->year); ?></div>
-                        </div>
+                        <h3 class="project-title"><?= e($project->title); ?></h3>
                     </div>
                 </a>
             <?php endforeach; ?>
