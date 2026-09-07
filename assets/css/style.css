@@ -707,6 +707,57 @@ button {
   transform: scale(1.05);
 }
 
+/* Autoplay Video Loop Card Container (Deep Dual-Cropped, Zero Timeline) */
+.card-video-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #000000;
+}
+
+.card-drive-iframe {
+  position: absolute;
+  top: -65px;
+  left: -8%;
+  width: 116%;
+  height: calc(100% + 180px);
+  border: none;
+  pointer-events: none;
+}
+
+.card-mp4-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.card-video-overlay-shield {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background: transparent;
+  cursor: pointer;
+}
+
+.card-category-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.3rem 0.65rem;
+  border-radius: 4px;
+  z-index: 5;
+  backdrop-filter: blur(8px);
+}
+
 .card-play-indicator {
   position: absolute;
   bottom: 12px;

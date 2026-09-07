@@ -188,10 +188,10 @@
   }
 
   .card-drive-iframe {
-    top: -55px;
+    top: -70px;
     left: -10%;
     width: 120%;
-    height: calc(100% + 155px);
+    height: calc(100% + 190px);
   }
 }
 
