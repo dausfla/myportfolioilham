@@ -656,9 +656,10 @@ button {
 }
 
 .filter-pill-btn.active {
-  background-color: #e60000;
-  color: #ffffff;
-  box-shadow: 0 4px 18px rgba(230, 0, 0, 0.45);
+  background-color: #ffffff;
+  color: #000000;
+  font-weight: 800;
+  box-shadow: 0 4px 18px rgba(255, 255, 255, 0.25);
 }
 
 /* 3-Column Work Grid with Rounded Autoplay Video Cards */
@@ -717,11 +718,10 @@ button {
 
 .card-drive-iframe {
   position: absolute;
-  top: -46px;
-  bottom: -46px;
-  left: -5%;
-  width: 110%;
-  height: calc(100% + 92px);
+  top: -55px;
+  left: -8%;
+  width: 116%;
+  height: calc(100% + 145px);
   border: none;
   pointer-events: none;
 }

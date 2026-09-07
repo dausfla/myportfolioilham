@@ -186,6 +186,13 @@
     bottom: -52px;
     height: calc(100% + 104px);
   }
+
+  .card-drive-iframe {
+    top: -55px;
+    left: -10%;
+    width: 120%;
+    height: calc(100% + 155px);
+  }
 }
 
 /* 375px Compact Mobile */
