@@ -130,9 +130,9 @@
     });
   }
 
-  // Client-side Work Category Filtering
+  // Client-side Work Category Filtering (Photography & Videography)
   function initCategoryFilter() {
-    const filterBtns = document.querySelectorAll('.filter-btn');
+    const filterBtns = document.querySelectorAll('.filter-btn, .filter-pill-btn');
     const projectCards = document.querySelectorAll('.work-grid .project-card');
 
     if (filterBtns.length === 0 || projectCards.length === 0) return;

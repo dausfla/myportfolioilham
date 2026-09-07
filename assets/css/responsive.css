@@ -47,7 +47,8 @@
   }
 
   .work-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.8rem;
   }
 
   .about-grid {
@@ -70,6 +71,29 @@
 @media (max-width: 768px) {
   .custom-cursor {
     display: none !important;
+  }
+
+  .work-grid {
+    grid-template-columns: 1fr;
+    gap: 1.8rem;
+  }
+
+  .works-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+
+  .filter-pill-container {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .filter-pill-btn {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem 0.6rem;
+    font-size: 0.7rem;
   }
 
   .section-padding {
