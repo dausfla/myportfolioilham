@@ -20,16 +20,27 @@ spl_autoload_register(function (string $class): void {
 
     $relativeClass = substr($class, strlen($prefix));
     
+    $candidates = [];
     if (str_starts_with($relativeClass, 'Models\\')) {
-        $file = BASE_DIR . '/models/' . str_replace('\\', '/', substr($relativeClass, 7)) . '.php';
+        $sub = str_replace('\\', '/', substr($relativeClass, 7));
+        $candidates[] = BASE_DIR . '/models/' . $sub . '.php';
+        $candidates[] = BASE_DIR . '/Models/' . $sub . '.php';
+        $candidates[] = BASE_DIR . '/models/' . strtolower($sub) . '.php';
     } elseif (str_starts_with($relativeClass, 'Services\\')) {
-        $file = BASE_DIR . '/services/' . str_replace('\\', '/', substr($relativeClass, 9)) . '.php';
+        $sub = str_replace('\\', '/', substr($relativeClass, 9));
+        $candidates[] = BASE_DIR . '/services/' . $sub . '.php';
+        $candidates[] = BASE_DIR . '/Services/' . $sub . '.php';
+        $candidates[] = BASE_DIR . '/services/' . strtolower($sub) . '.php';
     } else {
-        $file = BASE_DIR . '/' . str_replace('\\', '/', $relativeClass) . '.php';
+        $sub = str_replace('\\', '/', $relativeClass);
+        $candidates[] = BASE_DIR . '/' . $sub . '.php';
     }
 
-    if (file_exists($file)) {
-        require_once $file;
+    foreach ($candidates as $file) {
+        if (file_exists($file)) {
+            require_once $file;
+            return;
+        }
     }
 });
 
@@ -98,6 +109,8 @@ if (!function_exists('base_url')) {
         $envUrl = env('APP_URL');
         if (!empty($envUrl)) {
             $base = rtrim($envUrl, '/');
+        } elseif (function_exists('is_static_build') && is_static_build()) {
+            $base = '';
         } else {
             $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
             $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
@@ -110,7 +123,12 @@ if (!function_exists('base_url')) {
 
             $base = $protocol . $host . $dir;
         }
-        return rtrim($base, '/') . '/' . ltrim($path, '/');
+
+        $cleanPath = ltrim($path, '/');
+        if (empty($base)) {
+            return '/' . $cleanPath;
+        }
+        return rtrim($base, '/') . '/' . $cleanPath;
     }
 }
 

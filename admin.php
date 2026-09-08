@@ -28,7 +28,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
 }
 
 // Handle Login
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'login') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'login') {
     $passInput = (string)($_POST['password'] ?? '');
     if ($passInput === $adminPassword) {
         $_SESSION['admin_logged_in'] = true;
@@ -39,7 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-$isLoggedIn = !empty($_SESSION['admin_logged_in']);
+$isStaticBuild = is_static_build();
+$isLoggedIn = !empty($_SESSION['admin_logged_in']) || $isStaticBuild;
 
 // Paths to local JSON data files
 $profileFile = BASE_DIR . '/data/profile.json';
@@ -81,9 +82,16 @@ function writeJsonFile(string $filePath, array $data): bool {
     return $res;
 }
 
+$activeTab = 'tab-profile';
+
 // Process Admin Form Submissions
-if ($isLoggedIn && $_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($isLoggedIn && ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     $action = $_POST['action'] ?? '';
+    if ($action === 'save_project' || $action === 'delete_project') {
+        $activeTab = 'tab-projects';
+    } elseif ($action === 'save_media' || $action === 'delete_media') {
+        $activeTab = 'tab-media';
+    }
 
     // 1. Update Profile & Bio
     if ($action === 'update_profile') {
@@ -124,11 +132,13 @@ if ($isLoggedIn && $_SERVER['REQUEST_METHOD'] === 'POST') {
             'id' => $id,
             'title' => $title,
             'slug' => $slug,
-            'category' => strtoupper(trim((string)($_POST['category'] ?? 'CINEMATIC'))),
+            'category' => strtoupper(trim((string)($_POST['category'] ?? 'VIDEOGRAFI'))),
+            'type' => strtolower(trim((string)($_POST['type'] ?? 'video'))),
             'year' => trim((string)($_POST['year'] ?? date('Y'))),
             'client' => trim((string)($_POST['client'] ?? '')),
             'description' => trim((string)($_POST['description'] ?? '')),
             'cover_url' => trim((string)($_POST['cover_url'] ?? '')),
+            'thumbnail_url' => trim((string)($_POST['thumbnail_url'] ?? '')),
             'featured' => !empty($_POST['featured']),
             'published' => !empty($_POST['published']),
             'order' => (int)($_POST['order'] ?? 99),
@@ -398,6 +408,21 @@ table.admin-table th {
 
 <div class="container admin-container">
 
+    <?php if ($isStaticBuild): ?>
+        <!-- STATIC LOGIN MODAL FOR CLOUDFLARE PAGES -->
+        <div id="static-admin-login-modal" style="max-width: 420px; margin: 4rem auto;" class="admin-card">
+            <h2 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 0.5rem; text-align: center;">LOGIN DASHBOARD</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; margin-bottom: 2rem;">Masukan kata sandi untuk mengelola portofolio.</p>
+            <form onsubmit="window.submitStaticLogin(event)">
+                <div class="form-group">
+                    <label>KATA SANDI ADMIN</label>
+                    <input type="password" id="static-pass-input" class="form-control" placeholder="Masukan kata sandi..." required autofocus>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">MASUK DASHBOARD &rarr;</button>
+            </form>
+        </div>
+    <?php endif; ?>
+
     <?php if (!$isLoggedIn): ?>
         <!-- LOGIN MODAL FORM -->
         <div style="max-width: 420px; margin: 4rem auto;" class="admin-card">
@@ -419,6 +444,7 @@ table.admin-table th {
         </div>
 
     <?php else: ?>
+        <div id="admin-main-dashboard" style="<?= $isStaticBuild ? 'display:none;' : ''; ?>">
         <!-- DASHBOARD HEADER -->
         <div class="admin-header">
             <div>
@@ -427,7 +453,7 @@ table.admin-table th {
             </div>
             <div>
                 <a href="<?= route_url('/'); ?>" target="_blank" class="section-link" style="margin-right: 1.5rem;">LIHAT WEBSITE &nearr;</a>
-                <a href="<?= route_url('admin.php?action=logout'); ?>" class="btn-danger" style="text-decoration: none; padding: 0.7rem 1.2rem; display: inline-block;">KELUAR</a>
+                <a href="<?= route_url('admin.php?action=logout'); ?>" onclick="if(window.staticLogout){window.staticLogout(); return false;}" class="btn-danger" style="text-decoration: none; padding: 0.7rem 1.2rem; display: inline-block;">KELUAR</a>
             </div>
         </div>
 
@@ -437,6 +463,22 @@ table.admin-table th {
 
         <?php if (!empty($authError)): ?>
             <div class="alert-error"><?= e($authError); ?></div>
+        <?php endif; ?>
+
+        <?php if ($isStaticBuild): ?>
+            <div style="background: rgba(59, 130, 246, 0.12); border: 1px solid #3b82f6; color: #93c5fd; padding: 1.5rem; margin-bottom: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h4 style="margin: 0 0 0.4rem 0; font-family: var(--font-display); color: #ffffff; font-size: 1.1rem;">☁️ CLOUDFLARE PAGES — HEADLESS CMS ACTIVE</h4>
+                        <p style="margin: 0; font-size: 0.85rem; color: #cbd5e1; line-height: 1.5;">
+                            Portofolio Anda berjalan di infrastruktur Cloudflare Pages. Data utama dikelola via Google Sheets.
+                        </p>
+                    </div>
+                    <a href="https://docs.google.com/spreadsheets/d/1BW3oAgh8EtTBTalwIzRGISxh5nu0VFFTI3BmIHAfVus/edit" target="_blank" rel="noopener" class="btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
+                        📊 BUKA GOOGLE SHEETS CMS &nearr;
+                    </a>
+                </div>
+            </div>
         <?php endif; ?>
 
         <?php if (is_vercel()): ?>
@@ -449,9 +491,9 @@ table.admin-table th {
 
         <!-- TABS NAVIGATION -->
         <div class="admin-tabs">
-            <button class="admin-tab-btn active" onclick="showTab('tab-profile', this)">PROFIL SAYA</button>
-            <button class="admin-tab-btn" onclick="showTab('tab-projects', this)">PROYEK KARYA</button>
-            <button class="admin-tab-btn" onclick="showTab('tab-media', this)">GALERI MEDIA</button>
+            <button type="button" class="admin-tab-btn active" data-tab="tab-profile" onclick="showTab('tab-profile', this)">PROFIL SAYA</button>
+            <button type="button" class="admin-tab-btn" data-tab="tab-projects" onclick="showTab('tab-projects', this)">PROYEK KARYA</button>
+            <button type="button" class="admin-tab-btn" data-tab="tab-media" onclick="showTab('tab-media', this)">GALERI MEDIA</button>
         </div>
 
         <!-- TAB 1: PROFIL & BIO -->
@@ -540,23 +582,31 @@ table.admin-table th {
                         <div class="form-group">
                             <label>KATEGORI</label>
                             <select name="category" id="project_category" class="form-control" required>
-                                <option value="CINEMATIC">CINEMATIC</option>
+                                <option value="VIDEOGRAFI">VIDEOGRAFI</option>
+                                <option value="VIDEO CONTENT">VIDEO CONTENT</option>
+                                <option value="FOTO WEDDING">FOTO WEDDING</option>
                                 <option value="DOKUMENTASI">DOKUMENTASI</option>
-                                <option value="BRAND CONTENT">BRAND CONTENT</option>
-                                <option value="CAMPAIGN">CAMPAIGN</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
+                            <label>TIPE MEDIA (BADGE VIDEO)</label>
+                            <select name="type" id="project_type" class="form-control" required>
+                                <option value="video">VIDEO (Tampilkan Badge Video)</option>
+                                <option value="foto">FOTO (Tanpa Badge Video)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
                             <label>TAHUN PRODUKSI</label>
                             <input type="text" name="year" id="project_year" class="form-control" value="<?= date('Y'); ?>" required>
                         </div>
-                        <div class="form-group">
-                            <label>NAMA KLIEN</label>
-                            <input type="text" name="client" id="project_client" class="form-control" placeholder="Contoh: Brand / Perorangan / Independen">
-                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>NAMA KLIEN</label>
+                        <input type="text" name="client" id="project_client" class="form-control" placeholder="Contoh: Brand / Perorangan / Independen">
                     </div>
 
                     <div class="form-group">
@@ -565,11 +615,20 @@ table.admin-table th {
                     </div>
 
                     <div class="form-group">
-                        <label>URL COVER PROYEK (LINK GOOGLE DRIVE)</label>
+                        <label>URL COVER PROYEK (LINK GOOGLE DRIVE / UTAMA)</label>
                         <input type="text" name="cover_url" id="project_cover_url" class="form-control" required placeholder="Paste link Google Drive cover foto/video di sini...">
                         <div class="drive-hint">💡 Salin link Google Drive gambar/video cover proyek. Contoh: https://drive.google.com/file/d/FILE_ID/view</div>
                         <div style="margin-top: 0.8rem;">
                             <img id="project_cover_url_preview" src="" style="max-width: 200px; max-height: 120px; object-fit: cover; border: 1px solid var(--border-color); display: none;" referrerpolicy="no-referrer">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>URL THUMBNAIL CARD (LINK GOOGLE DRIVE — OPSIONAL)</label>
+                        <input type="text" name="thumbnail_url" id="project_thumbnail_url" class="form-control" placeholder="Paste link Google Drive thumbnail khusus card jika ada...">
+                        <div class="drive-hint">💡 Opsional. Salin link Google Drive foto thumbnail khusus untuk tampil di card. Jika dikosongkan, sistem otomatis menggunakan cover proyek.</div>
+                        <div style="margin-top: 0.8rem;">
+                            <img id="project_thumbnail_url_preview" src="" style="max-width: 200px; max-height: 120px; object-fit: cover; border: 1px solid var(--border-color); display: none;" referrerpolicy="no-referrer">
                         </div>
                     </div>
 
@@ -626,7 +685,7 @@ table.admin-table th {
                                     <td><?= e($p['year'] ?? ''); ?></td>
                                     <td><?= !empty($p['featured']) ? '✅ Ya' : 'Tidak'; ?></td>
                                     <td>
-                                        <button class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;" onclick='editProject(<?= json_encode($p); ?>)'>EDIT</button>
+                                        <button type="button" class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;" data-json="<?= e(json_encode($p)); ?>" onclick="editProject(this)">EDIT</button>
                                         <form method="POST" action="" style="display: inline-block;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus proyek ini?');">
                                             <input type="hidden" name="action" value="delete_project">
                                             <input type="hidden" name="id" value="<?= e($p['id'] ?? ''); ?>">
@@ -746,7 +805,7 @@ table.admin-table th {
                                     </td>
                                     <td><?= e($projTitle); ?></td>
                                     <td>
-                                        <button class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;" onclick='editMedia(<?= json_encode($m); ?>)'>EDIT</button>
+                                        <button type="button" class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;" data-json="<?= e(json_encode($m)); ?>" onclick="editMedia(this)">EDIT</button>
                                         <form method="POST" action="" style="display: inline-block;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus media ini?');">
                                             <input type="hidden" name="action" value="delete_media">
                                             <input type="hidden" name="id" value="<?= e($m['id'] ?? ''); ?>">
@@ -761,44 +820,109 @@ table.admin-table th {
             </div>
         </div>
 
+        </div><!-- /#admin-main-dashboard -->
     <?php endif; ?>
 
-</div>
+</div><!-- /.admin-container -->
 
 <script>
 function showTab(tabId, btn) {
-    document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
-    document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(tabId).style.display = 'block';
-    if (btn) btn.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.style.display = 'none';
+    });
+    document.querySelectorAll('.admin-tab-btn').forEach(b => {
+        b.classList.remove('active');
+    });
+    
+    const targetTab = document.getElementById(tabId);
+    if (targetTab) {
+        targetTab.style.display = 'block';
+    }
+
+    if (btn) {
+        btn.classList.add('active');
+    } else {
+        const matchingBtn = document.querySelector(`.admin-tab-btn[data-tab="${tabId}"]`) || document.querySelector(`.admin-tab-btn[onclick*="${tabId}"]`);
+        if (matchingBtn) matchingBtn.classList.add('active');
+    }
 }
 
-function editProject(p) {
-    document.getElementById('project-form-title').textContent = 'EDIT PROYEK: ' + p.title;
+function editProject(param) {
+    let p = param;
+    if (param && param.getAttribute && param.getAttribute('data-json')) {
+        try {
+            p = JSON.parse(param.getAttribute('data-json'));
+        } catch (e) {
+            console.error('Error parsing project json:', e);
+            return;
+        }
+    }
+    showTab('tab-projects');
+    document.getElementById('project-form-title').textContent = 'EDIT PROYEK: ' + (p.title || '');
     document.getElementById('project_id').value = p.id || '';
     document.getElementById('project_title').value = p.title || '';
-    document.getElementById('project_category').value = p.category || 'CINEMATIC';
+    
+    const catSelect = document.getElementById('project_category');
+    const catVal = (p.category || 'CINEMATIC').toUpperCase();
+    let exists = false;
+    for (let i = 0; i < catSelect.options.length; i++) {
+        if (catSelect.options[i].value === catVal) {
+            exists = true;
+            break;
+        }
+    }
+    if (!exists && catVal) {
+        const opt = document.createElement('option');
+        opt.value = catVal;
+        opt.textContent = catVal;
+        catSelect.appendChild(opt);
+    }
+    catSelect.value = catVal;
+
+    const typeSelect = document.getElementById('project_type');
+    if (typeSelect) {
+        const defaultType = ['VIDEOGRAFI', 'VIDEO CONTENT'].includes(catVal) ? 'video' : 'foto';
+        typeSelect.value = (p.type || defaultType).toLowerCase();
+    }
+
     document.getElementById('project_year').value = p.year || '';
     document.getElementById('project_client').value = p.client || '';
     document.getElementById('project_description').value = p.description || '';
     document.getElementById('project_cover_url').value = p.cover_url || '';
+    document.getElementById('project_thumbnail_url').value = p.thumbnail_url || '';
     document.getElementById('project_featured').checked = !!p.featured;
     document.getElementById('project_published').checked = !!p.published;
     document.getElementById('project_order').value = p.order || 1;
-    document.getElementById('project-submit-btn').textContent = 'UPDATE PROYEK \u2192';
-    // Update preview gambar cover
+    document.getElementById('project-submit-btn').textContent = 'UPDATE PROYEK →';
+    
     updateDrivePreview('project_cover_url', 'project_cover_url_preview');
-    window.scrollTo({ top: document.getElementById('project-form').offsetTop - 100, behavior: 'smooth' });
+    updateDrivePreview('project_thumbnail_url', 'project_thumbnail_url_preview');
+    const formEl = document.getElementById('project-form');
+    if (formEl) {
+        window.scrollTo({ top: formEl.offsetTop - 100, behavior: 'smooth' });
+    }
 }
 
 function resetProjectForm() {
     document.getElementById('project-form-title').textContent = 'TAMBAH PROYEK BARU';
     document.getElementById('project-form').reset();
     document.getElementById('project_id').value = '';
-    document.getElementById('project-submit-btn').textContent = 'TAMBAH PROYEK \u2192';
+    const typeSelect = document.getElementById('project_type');
+    if (typeSelect) typeSelect.value = 'video';
+    document.getElementById('project-submit-btn').textContent = 'TAMBAH PROYEK →';
 }
 
-function editMedia(m) {
+function editMedia(param) {
+    let m = param;
+    if (param && param.getAttribute && param.getAttribute('data-json')) {
+        try {
+            m = JSON.parse(param.getAttribute('data-json'));
+        } catch (e) {
+            console.error('Error parsing media json:', e);
+            return;
+        }
+    }
+    showTab('tab-media');
     document.getElementById('media-form-title').textContent = 'EDIT MEDIA: ' + (m.title || 'Galeri');
     document.getElementById('media_id').value = m.id || '';
     document.getElementById('media_project_id').value = m.project_id || '';
@@ -809,10 +933,13 @@ function editMedia(m) {
     document.getElementById('media_caption').value = m.caption || '';
     document.getElementById('media_published').checked = !!m.published;
     document.getElementById('media_order').value = m.order || 1;
-    document.getElementById('media-submit-btn').textContent = 'UPDATE MEDIA \u2192';
-    // Update preview gambar/video media
+    document.getElementById('media-submit-btn').textContent = 'UPDATE MEDIA →';
+    
     updateDrivePreview('media_url', 'media_url_preview');
-    window.scrollTo({ top: document.getElementById('media-form').offsetTop - 100, behavior: 'smooth' });
+    const formEl = document.getElementById('media-form');
+    if (formEl) {
+        window.scrollTo({ top: formEl.offsetTop - 100, behavior: 'smooth' });
+    }
 }
 
 function resetMediaForm() {
@@ -853,7 +980,21 @@ function updateDrivePreview(inputId, previewImgId) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    ['profile_image', 'project_cover_url', 'media_url'].forEach(id => {
+    // Add explicit event listeners to all tab buttons for 100% click reliability
+    document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const tabId = this.getAttribute('data-tab');
+            if (tabId) {
+                showTab(tabId, this);
+            }
+        });
+    });
+
+    const initialTab = <?= json_encode($activeTab ?? 'tab-profile'); ?>;
+    showTab(initialTab);
+
+    ['profile_image', 'project_cover_url', 'project_thumbnail_url', 'media_url'].forEach(id => {
         const input = document.getElementById(id) || document.querySelector('[name="' + id + '"]');
         if (input) {
             updateDrivePreview(id, id + '_preview');
@@ -862,6 +1003,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+</script>
+
+<script>
+(function() {
+    const IS_STATIC = <?= $isStaticBuild ? 'true' : 'false'; ?>;
+    if (IS_STATIC) {
+        const PASS = <?= json_encode(env('ADMIN_PASSWORD', 'ilham123')); ?>;
+        function checkStaticAuth() {
+            const loginModal = document.getElementById('static-admin-login-modal');
+            const dashboard = document.getElementById('admin-main-dashboard');
+            if (localStorage.getItem('admin_logged_in') === 'true') {
+                if (loginModal) loginModal.style.display = 'none';
+                if (dashboard) dashboard.style.display = 'block';
+            } else {
+                if (loginModal) loginModal.style.display = 'block';
+                if (dashboard) dashboard.style.display = 'none';
+            }
+        }
+        window.submitStaticLogin = function(e) {
+            e.preventDefault();
+            const input = document.getElementById('static-pass-input');
+            const val = (input ? input.value : '').trim();
+            if (val === PASS) {
+                localStorage.setItem('admin_logged_in', 'true');
+                checkStaticAuth();
+            } else {
+                alert('Kata sandi salah. Silakan coba lagi.');
+            }
+        };
+        window.staticLogout = function() {
+            localStorage.removeItem('admin_logged_in');
+            checkStaticAuth();
+        };
+        document.addEventListener('DOMContentLoaded', checkStaticAuth);
+    }
+})();
 </script>
 
 <?php

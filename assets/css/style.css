@@ -874,12 +874,20 @@ button {
 /* Sleek Spoiler Video Player Card & Control Bar */
 .video-player-card {
   width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
   position: relative;
   background-color: #050505;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--border-color);
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+  transition: max-width 0.4s var(--ease-out-expo);
+}
+
+/* Dynamic Portrait Mode (9:16 Vertical Videos / Reels / Shorts) */
+.video-player-card.portrait-mode {
+  max-width: 420px;
 }
 
 .spoiler-video-wrapper {
@@ -888,6 +896,11 @@ button {
   aspect-ratio: 16 / 9;
   overflow: hidden;
   background-color: #000000;
+  transition: aspect-ratio 0.4s var(--ease-out-expo);
+}
+
+.video-player-card.portrait-mode .spoiler-video-wrapper {
+  aspect-ratio: 9 / 16;
 }
 
 /* Dual-Crop Google Drive Iframe: Removes top header bar & bottom timeline clutter */
@@ -902,10 +915,17 @@ button {
   pointer-events: auto;
 }
 
+.video-player-card.portrait-mode .drive-cropped-iframe {
+  top: -40px;
+  bottom: -40px;
+  height: calc(100% + 80px);
+}
+
 .spoiler-mp4-video {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  background-color: #000000;
 }
 
 .video-interactive-overlay {
@@ -1001,8 +1021,11 @@ button {
 
 .gallery-image-frame {
   width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
   cursor: pointer;
   overflow: hidden;
+  border-radius: 8px;
 }
 
 .gallery-image-frame img {
@@ -1148,10 +1171,11 @@ button {
 
 .contact-links-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 2rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.5rem;
   border-top: 1px solid var(--border-color);
   padding-top: 2.5rem;
+  align-items: start;
 }
 
 .contact-link-card {

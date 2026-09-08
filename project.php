@@ -68,76 +68,108 @@ require_once __DIR__ . '/includes/navigation.php';
 
         <!-- MEDIA GALLERY STACK -->
         <div class="media-gallery-stack">
-            <?php if (empty($project->media)): ?>
-                <!-- Fallback to cover image if no separate media entries exist -->
-                <div class="media-item-wrap">
-                    <div class="gallery-image-frame" data-full-src="<?= e($project->coverUrl); ?>" data-cursor="LIHAT FOTO">
-                        <img src="<?= e($project->coverUrl); ?>" alt="<?= e($project->title); ?>" loading="lazy">
-                    </div>
-                </div>
-            <?php else: ?>
-                <?php foreach ($project->media as $media): ?>
-                    <div class="media-item-wrap">
-                        <?php if ($media->isVideo()): 
-                            $isDriveEmbed = str_contains($media->url, 'drive.google.com');
-                            $embedUrl = GoogleDriveService::getDriveVideoEmbedUrl($media->url);
-                        ?>
-                            <!-- Sleek Spoiler Video Player (No Timeline Overlap Clutter) -->
-                            <div class="video-player-card" data-video-type="<?= $isDriveEmbed ? 'drive' : 'mp4'; ?>">
-                                <?php if ($isDriveEmbed): ?>
-                                    <div class="spoiler-video-wrapper">
-                                        <iframe
-                                            src="<?= e($embedUrl); ?>"
-                                            class="drive-cropped-iframe"
-                                            allow="autoplay; encrypted-media; fullscreen"
-                                            allowfullscreen
-                                            title="<?= e($media->title ?: $project->title); ?>">
-                                        </iframe>
-                                        <div class="video-interactive-overlay">
-                                            <div class="spoiler-badge">PREVIEW SPOILER</div>
-                                            <button class="custom-play-pause-btn" aria-label="Putar / Hentikan Video">
-                                                <span class="btn-icon">&#9658;</span>
-                                                <span class="btn-text">PUTAR / JEDA VIDEO</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="video-control-bar">
-                                        <div class="video-status-text">&bull; PREVIEW VIDEO KARYA</div>
-                                        <a href="<?= e($embedUrl); ?>" target="_blank" rel="noopener" class="video-external-link">
-                                            LAYAR PENUH &nearr;
-                                        </a>
-                                    </div>
-                                <?php else: ?>
-                                    <div class="spoiler-video-wrapper">
-                                        <video poster="<?= e($media->thumbnailUrl); ?>" autoplay loop muted playsinline class="spoiler-mp4-video">
-                                            <source src="<?= e($media->url); ?>" type="video/mp4">
-                                        </video>
-                                        <div class="video-interactive-overlay">
-                                            <div class="spoiler-badge">MP4 VIDEO</div>
-                                            <button class="custom-play-pause-btn" aria-label="Putar / Hentikan Video">
-                                                <span class="btn-icon">&#9658;</span>
-                                                <span class="btn-text">PUTAR &amp; UNMUTE</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="video-control-bar">
-                                        <div class="video-status-text">&bull; DOKUMENTASI VISUAL</div>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        <?php else: ?>
-                            <!-- Editorial Photo Gallery Item -->
-                            <div class="gallery-image-frame" data-full-src="<?= e($media->url); ?>" data-caption="<?= e($media->caption); ?>" data-cursor="LIHAT FOTO">
-                                <img src="<?= e($media->url); ?>" alt="<?= e($media->title ?: $project->title); ?>" loading="lazy">
-                            </div>
-                        <?php endif; ?>
+            <?php 
+            $mediaList = $project->media;
+            if (empty($mediaList)) {
+                $rawUrl = !empty($project->rawCoverUrl) ? $project->rawCoverUrl : $project->coverUrl;
+                $isProjVideo = $project->isVideo();
+                
+                $fallbackMedia = new \App\Models\Media([
+                    'id' => 'cover-' . $project->id,
+                    'project_id' => $project->id,
+                    'type' => $isProjVideo ? 'video' : 'image',
+                    'title' => $project->title,
+                    'url' => $rawUrl,
+                    'thumbnail_url' => $project->coverUrl,
+                    'caption' => '',
+                    'published' => true,
+                    'order' => 1
+                ]);
 
-                        <?php if (!empty($media->caption)): ?>
-                            <div class="media-caption"><?= e($media->caption); ?></div>
-                        <?php endif; ?>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
+                if ($isProjVideo) {
+                    $embedUrl = GoogleDriveService::getDriveVideoEmbedUrl($rawUrl);
+                    if ($embedUrl) {
+                        $fallbackMedia->url = $embedUrl;
+                    }
+                } else {
+                    $fallbackMedia->url = GoogleDriveService::getDriveImageUrl($rawUrl);
+                }
+
+                $mediaList = [$fallbackMedia];
+            }
+            ?>
+
+            <?php foreach ($mediaList as $media): 
+                $isItemVideo = $media->isVideo() || ($project->isVideo() && strtolower($media->type) !== 'image') || str_contains(strtolower($media->url), 'drive.google.com') || str_contains(strtolower($media->url), '.mp4');
+                $isPortrait = false;
+                $mediaText = strtolower($media->title . ' ' . $media->caption . ' ' . $project->title . ' ' . $project->category);
+                if (str_contains($mediaText, 'portrait') || str_contains($mediaText, 'reels') || str_contains($mediaText, 'reel') || str_contains($mediaText, 'shorts') || str_contains($mediaText, 'tiktok') || str_contains($mediaText, 'vertical')) {
+                    $isPortrait = true;
+                }
+            ?>
+                <div class="media-item-wrap">
+                    <?php if ($isItemVideo): 
+                        $isDriveEmbed = str_contains($media->url, 'drive.google.com');
+                        $embedUrl = GoogleDriveService::getDriveVideoEmbedUrl($media->url);
+                    ?>
+                        <!-- Sleek Video Player -->
+                        <div class="video-player-card <?= $isPortrait ? 'portrait-mode' : ''; ?>" 
+                             data-video-type="<?= $isDriveEmbed ? 'drive' : 'mp4'; ?>"
+                             data-thumbnail-url="<?= e($media->thumbnailUrl ?: $media->url); ?>"
+                             data-orientation="<?= $isPortrait ? 'portrait' : 'landscape'; ?>">
+                            <?php if ($isDriveEmbed): ?>
+                                <div class="spoiler-video-wrapper">
+                                    <iframe
+                                        src="<?= e($embedUrl); ?>"
+                                        class="drive-cropped-iframe"
+                                        allow="autoplay; encrypted-media; fullscreen"
+                                        allowfullscreen
+                                        title="<?= e($media->title ?: $project->title); ?>">
+                                    </iframe>
+                                    <div class="video-interactive-overlay">
+                                        <div class="spoiler-badge">PREVIEW VIDEO</div>
+                                        <button class="custom-play-pause-btn" aria-label="Putar / Hentikan Video">
+                                            <span class="btn-icon">&#9658;</span>
+                                            <span class="btn-text">PUTAR / JEDA VIDEO</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="video-control-bar">
+                                    <div class="video-status-text">&bull; PREVIEW VIDEO KARYA</div>
+                                    <a href="<?= e($embedUrl); ?>" target="_blank" rel="noopener" class="video-external-link">
+                                        LAYAR PENUH &nearr;
+                                    </a>
+                                </div>
+                            <?php else: ?>
+                                <div class="spoiler-video-wrapper">
+                                    <video poster="<?= e($media->thumbnailUrl); ?>" autoplay loop muted playsinline class="spoiler-mp4-video">
+                                        <source src="<?= e($media->url); ?>" type="video/mp4">
+                                    </video>
+                                    <div class="video-interactive-overlay">
+                                        <div class="spoiler-badge">MP4 VIDEO</div>
+                                        <button class="custom-play-pause-btn" aria-label="Putar &amp; Unmute Video">
+                                            <span class="btn-icon">&#9658;</span>
+                                            <span class="btn-text">PUTAR &amp; UNMUTE</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="video-control-bar">
+                                    <div class="video-status-text">&bull; DOKUMENTASI VISUAL</div>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php else: ?>
+                        <!-- Editorial Photo Gallery Item -->
+                        <div class="gallery-image-frame" data-full-src="<?= e($media->url); ?>" data-caption="<?= e($media->caption); ?>" data-cursor="LIHAT FOTO">
+                            <img src="<?= e($media->url); ?>" alt="<?= e($media->title ?: $project->title); ?>" loading="lazy">
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($media->caption)): ?>
+                        <div class="media-caption"><?= e($media->caption); ?></div>
+                    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
         </div>
 
         <!-- NEXT PROJECT NAVIGATION -->

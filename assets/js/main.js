@@ -68,7 +68,7 @@
     });
   }
 
-  // Spoiler Video Players (Google Drive & MP4)
+  // Spoiler Video Players (Google Drive & MP4) with Dynamic Aspect Ratio Auto-Detection
   function initVideoPlayers() {
     const videoCards = document.querySelectorAll('.video-player-card');
     videoCards.forEach(card => {
@@ -80,6 +80,53 @@
       const mp4Video = card.querySelector('video');
 
       if (!overlay) return;
+
+      // 1. Auto-detect orientation for MP4 video metadata
+      if (mp4Video) {
+        function checkMp4Orientation() {
+          if (mp4Video.videoHeight && mp4Video.videoWidth) {
+            if (mp4Video.videoHeight > mp4Video.videoWidth) {
+              card.classList.add('portrait-mode');
+            } else {
+              card.classList.remove('portrait-mode');
+            }
+          }
+        }
+        if (mp4Video.readyState >= 1) {
+          checkMp4Orientation();
+        } else {
+          mp4Video.addEventListener('loadedmetadata', checkMp4Orientation);
+        }
+
+        // Check poster image dimensions
+        if (mp4Video.poster) {
+          const testImg = new Image();
+          testImg.onload = function () {
+            if (testImg.naturalHeight > testImg.naturalWidth) {
+              card.classList.add('portrait-mode');
+            }
+          };
+          testImg.src = mp4Video.poster;
+        }
+      }
+
+      // 2. Auto-detect orientation via thumbnail URL attribute (Google Drive / iframe)
+      const thumbUrl = card.getAttribute('data-thumbnail-url');
+      if (thumbUrl) {
+        const testThumb = new Image();
+        testThumb.onload = function () {
+          if (testThumb.naturalHeight > testThumb.naturalWidth) {
+            card.classList.add('portrait-mode');
+          }
+        };
+        testThumb.src = thumbUrl;
+      }
+
+      // 3. Explicit dataset orientation attribute check
+      const orientationAttr = card.getAttribute('data-orientation') || card.getAttribute('data-aspect-ratio');
+      if (orientationAttr === 'portrait' || orientationAttr === '9:16' || orientationAttr === 'vertical') {
+        card.classList.add('portrait-mode');
+      }
 
       let isPlaying = false;
 
@@ -123,7 +170,7 @@
       if (mp4Video) {
         mp4Video.addEventListener('pause', () => {
           overlay.classList.remove('active-playing');
-          if (btnText) btnText.textContent = 'PUTAR VIDEO';
+          if (btnText) btnText.textContent = 'PUTAR & UNMUTE';
           if (btnIcon) btnIcon.innerHTML = '&#9658;';
         });
       }

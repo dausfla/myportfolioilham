@@ -89,6 +89,23 @@ class GoogleDriveService {
     }
 
     /**
+     * Get direct stream URL for HTML5 <video> tag playback
+     */
+    public static function getDriveVideoStreamUrl(?string $url): string {
+        if (empty($url)) {
+            return '';
+        }
+        $fileId = static::getDriveFileId($url);
+        if ($fileId) {
+            return "https://drive.google.com/uc?export=download&id={$fileId}";
+        }
+        if (filter_var($url, FILTER_VALIDATE_URL)) {
+            return $url;
+        }
+        return '';
+    }
+
+    /**
      * Check if a URL is a Google Drive URL
      */
     public static function isDriveUrl(?string $url): bool {

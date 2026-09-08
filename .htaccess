@@ -5,6 +5,9 @@
     # Prevent directory listing
     Options -Indexes
 
+    # Route /admin to admin.php
+    RewriteRule ^admin/?$ admin.php [L,QSA]
+
     # Route /work to work.php
     RewriteRule ^work/?$ work.php [L,QSA]
 

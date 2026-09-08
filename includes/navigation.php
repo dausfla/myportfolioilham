@@ -14,7 +14,7 @@ $waUrl = !empty($profile->whatsapp) ? $profile->whatsapp : 'https://wa.me/628962
     <div class="container">
         <div class="nav-wrapper">
             <a href="<?= route_url('/'); ?>" class="brand-logo" data-cursor="BERANDA">
-                H V M
+                ARCHIVE
             </a>
 
             <nav class="nav-links">
@@ -37,7 +37,7 @@ $waUrl = !empty($profile->whatsapp) ? $profile->whatsapp : 'https://wa.me/628962
 <!-- Mobile Fullscreen Overlay -->
 <div id="mobile-overlay" class="mobile-overlay">
     <div class="mobile-overlay-header">
-        <span class="mobile-overlay-title">H V M &mdash; NAVIGASI</span>
+        <span class="mobile-overlay-title">ARCHIVE &mdash; NAVIGASI</span>
         <button id="mobile-overlay-close" class="mobile-overlay-close-btn" aria-label="Tutup Menu">
             TUTUP <span>&times;</span>
         </button>

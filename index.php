@@ -67,34 +67,11 @@ require_once __DIR__ . '/includes/navigation.php';
 
         <div class="work-grid">
             <?php foreach (array_slice($featuredProjects, 0, 6) as $project): 
-                $isDriveVideo = \App\Services\GoogleDriveService::isDriveUrl($project->coverUrl);
-                $driveEmbedUrl = $isDriveVideo ? \App\Services\GoogleDriveService::getDriveVideoEmbedUrl($project->coverUrl) : null;
-                $isMp4Video = str_ends_with(strtolower($project->coverUrl), '.mp4');
-                $isVideo = $isDriveVideo || $isMp4Video;
+                $isVideo = $project->isVideo();
             ?>
                 <a href="<?= project_url($project->slug); ?>" class="project-card" data-category="<?= e($project->category); ?>" data-cursor="LIHAT DETAIL">
                     <div class="project-media-wrap">
-                        <?php if ($isDriveVideo && $driveEmbedUrl): ?>
-                            <div class="card-video-container">
-                                <iframe
-                                    src="<?= e($driveEmbedUrl); ?>?autoplay=1&muted=1"
-                                    class="card-drive-iframe"
-                                    allow="autoplay; encrypted-media"
-                                    loading="lazy"
-                                    title="<?= e($project->title); ?>">
-                                </iframe>
-                                <div class="card-video-overlay-shield"></div>
-                            </div>
-                        <?php elseif ($isMp4Video): ?>
-                            <div class="card-video-container">
-                                <video autoplay loop muted playsinline class="card-mp4-video">
-                                    <source src="<?= e($project->coverUrl); ?>" type="video/mp4">
-                                </video>
-                                <div class="card-video-overlay-shield"></div>
-                            </div>
-                        <?php else: ?>
-                            <img src="<?= e($project->coverUrl); ?>" alt="<?= e($project->title); ?>" class="project-cover-img" loading="lazy">
-                        <?php endif; ?>
+                        <img src="<?= e($project->getThumbnailUrl()); ?>" alt="<?= e($project->title); ?>" class="project-cover-img" loading="lazy">
 
                         <?php if ($isVideo): ?>
                             <div class="card-play-indicator">
@@ -190,10 +167,6 @@ require_once __DIR__ . '/includes/navigation.php';
             <a href="<?= e($profile->instagram); ?>" target="_blank" rel="noopener" class="contact-link-card" data-cursor="INSTAGRAM">
                 <div class="contact-link-label">INSTAGRAM</div>
                 <div class="contact-link-val">@INSTAGRAM</div>
-            </a>
-            <a href="<?= e($profile->youtube); ?>" target="_blank" rel="noopener" class="contact-link-card" data-cursor="YOUTUBE">
-                <div class="contact-link-label">YOUTUBE</div>
-                <div class="contact-link-val">KANAL YOUTUBE</div>
             </a>
         </div>
     </div>

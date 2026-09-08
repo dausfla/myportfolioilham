@@ -32,11 +32,20 @@ class Media {
     }
 
     public function isVideo(): bool {
-        return $this->type === 'video';
+        if ($this->type === 'video') {
+            return true;
+        }
+        if (!empty($this->url)) {
+            $urlLower = strtolower($this->url);
+            if (str_contains($urlLower, 'drive.google.com') || str_contains($urlLower, '.mp4') || str_contains($urlLower, 'youtube.com') || str_contains($urlLower, 'vimeo.com')) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function isImage(): bool {
-        return $this->type === 'image';
+        return !$this->isVideo();
     }
 
     public function toArray(): array {

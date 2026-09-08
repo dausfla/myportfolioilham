@@ -24,7 +24,12 @@ class GoogleSheetsService {
         foreach ($data as $row) {
             $project = new Project($row);
             if ($project->published) {
+                $project->rawCoverUrl = (string)($row['cover_url'] ?? $row['coverUrl'] ?? $project->coverUrl);
+                $project->rawThumbnailUrl = (string)($row['thumbnail_url'] ?? $row['thumbnailUrl'] ?? $project->thumbnailUrl);
                 $project->coverUrl = GoogleDriveService::getDriveImageUrl($project->coverUrl);
+                if (!empty($project->thumbnailUrl)) {
+                    $project->thumbnailUrl = GoogleDriveService::getDriveImageUrl($project->thumbnailUrl);
+                }
                 $projects[] = $project;
             }
         }
@@ -61,16 +66,16 @@ class GoogleSheetsService {
      * @return Media[]
      */
     public function getMediaByProject(string $projectId): array {
+        if (empty($projectId)) {
+            return [];
+        }
         $data = $this->loadJsonData('media');
         $mediaList = [];
 
         foreach ($data as $row) {
             $media = new Media($row);
-            if ($media->published && ($media->projectId === $projectId || empty($projectId))) {
-                if ($media->isImage()) {
-                    $media->url = GoogleDriveService::getDriveImageUrl($media->url);
-                    $media->thumbnailUrl = GoogleDriveService::getDriveThumbnailUrl($media->thumbnailUrl ?: $media->url);
-                } else {
+            if ($media->published && $media->projectId === $projectId) {
+                if ($media->isVideo() || str_contains($media->url, 'drive.google.com')) {
                     $embedUrl = GoogleDriveService::getDriveVideoEmbedUrl($media->url);
                     if ($embedUrl) {
                         $media->url = $embedUrl;
@@ -80,6 +85,9 @@ class GoogleSheetsService {
                     } elseif (GoogleDriveService::getDriveFileId($media->url)) {
                         $media->thumbnailUrl = GoogleDriveService::getDriveThumbnailUrl($media->url);
                     }
+                } else {
+                    $media->url = GoogleDriveService::getDriveImageUrl($media->url);
+                    $media->thumbnailUrl = GoogleDriveService::getDriveThumbnailUrl($media->thumbnailUrl ?: $media->url);
                 }
                 $mediaList[] = $media;
             }

@@ -34,45 +34,22 @@ require_once __DIR__ . '/includes/navigation.php';
             <!-- Filter Pills Bar -->
             <div class="filter-pill-container">
                 <button class="filter-pill-btn active" data-filter="ALL" data-cursor="FILTER">SEMUA</button>
-                <button class="filter-pill-btn" data-filter="FOTOGRAFI" data-cursor="FILTER">FOTOGRAFI</button>
                 <button class="filter-pill-btn" data-filter="VIDEOGRAFI" data-cursor="FILTER">VIDEOGRAFI</button>
+                <button class="filter-pill-btn" data-filter="VIDEO CONTENT" data-cursor="FILTER">VIDEO CONTENT</button>
+                <button class="filter-pill-btn" data-filter="FOTO WEDDING" data-cursor="FILTER">FOTO WEDDING</button>
+                <button class="filter-pill-btn" data-filter="DOKUMENTASI" data-cursor="FILTER">DOKUMENTASI</button>
             </div>
         </div>
 
-        <!-- 3-Column Work Grid (Autoplay Video Preview Loop, Deep Cropped Timeline, Precise Text) -->
+        <!-- 3-Column Work Grid (Static High-Res Cover Image with Video Indicator Badge) -->
         <div class="work-grid">
             <?php foreach ($projects as $project): 
-                $isDriveVideo = GoogleDriveService::isDriveUrl($project->coverUrl);
-                $driveEmbedUrl = $isDriveVideo ? GoogleDriveService::getDriveVideoEmbedUrl($project->coverUrl) : null;
-                $isMp4Video = str_ends_with(strtolower($project->coverUrl), '.mp4');
-                $isVideo = $isDriveVideo || $isMp4Video;
+                $isVideo = $project->isVideo();
             ?>
                 <a href="<?= project_url($project->slug); ?>" class="project-card" data-category="<?= e($project->category); ?>" data-cursor="LIHAT DETAIL">
                     <div class="project-media-wrap">
-                        <?php if ($isDriveVideo && $driveEmbedUrl): ?>
-                            <!-- Google Drive Autoplay Muted Video Preview Loop (Deep Cropped, Zero Timeline Line) -->
-                            <div class="card-video-container">
-                                <iframe
-                                    src="<?= e($driveEmbedUrl); ?>?autoplay=1&muted=1"
-                                    class="card-drive-iframe"
-                                    allow="autoplay; encrypted-media"
-                                    loading="lazy"
-                                    title="<?= e($project->title); ?>">
-                                </iframe>
-                                <div class="card-video-overlay-shield"></div>
-                            </div>
-                        <?php elseif ($isMp4Video): ?>
-                            <!-- Direct MP4 Autoplay Muted Video Preview Loop -->
-                            <div class="card-video-container">
-                                <video autoplay loop muted playsinline class="card-mp4-video">
-                                    <source src="<?= e($project->coverUrl); ?>" type="video/mp4">
-                                </video>
-                                <div class="card-video-overlay-shield"></div>
-                            </div>
-                        <?php else: ?>
-                            <!-- High-Res Cover Image -->
-                            <img src="<?= e($project->coverUrl); ?>" alt="<?= e($project->title); ?>" class="project-cover-img" loading="lazy">
-                        <?php endif; ?>
+                        <!-- High-Res Custom Thumbnail Image -->
+                        <img src="<?= e($project->getThumbnailUrl()); ?>" alt="<?= e($project->title); ?>" class="project-cover-img" loading="lazy">
 
                         <?php if ($isVideo): ?>
                             <div class="card-play-indicator">

@@ -48,10 +48,6 @@ require_once __DIR__ . '/includes/navigation.php';
                 <div class="contact-link-label">INSTAGRAM</div>
                 <div class="contact-link-val">@INSTAGRAM</div>
             </a>
-            <a href="<?= e($profile->youtube); ?>" target="_blank" rel="noopener" class="contact-link-card" data-cursor="YOUTUBE">
-                <div class="contact-link-label">YOUTUBE</div>
-                <div class="contact-link-val">KANAL YOUTUBE</div>
-            </a>
         </div>
     </div>
 </section>

@@ -9,7 +9,7 @@ declare(strict_types=1);
 $pageTitle = $pageTitle ?? 'Ilham Ramadhan Setiawan — Videografer & Editor';
 $metaDescription = $metaDescription ?? 'Portofolio Ilham Ramadhan Setiawan, seorang videografer dan editor yang berfokus pada pembuatan visual yang kuat, emosional, dan bercerita.';
 $ogImage = $ogImage ?? asset_url('assets/images/og-cover.jpg');
-$canonicalUrl = $canonicalUrl ?? (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+$canonicalUrl = $canonicalUrl ?? (isset($_SERVER['HTTP_HOST']) ? ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://{$_SERVER['HTTP_HOST']}" . ($_SERVER['REQUEST_URI'] ?? '/')) : base_url());
 ?>
 <!DOCTYPE html>
 <html lang="id">

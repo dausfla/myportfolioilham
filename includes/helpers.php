@@ -35,6 +35,15 @@ if (!function_exists('slugify')) {
     }
 }
 
+if (!function_exists('is_static_build')) {
+    /**
+     * Detect if generating static build for Cloudflare Pages / Static Hosting
+     */
+    function is_static_build(): bool {
+        return defined('STATIC_BUILD') && STATIC_BUILD === true;
+    }
+}
+
 if (!function_exists('is_vercel')) {
     /**
      * Detect if running on Vercel serverless environment
@@ -59,6 +68,9 @@ if (!function_exists('project_url')) {
      * Generate project detail URL
      */
     function project_url(string $slug): string {
+        if (is_static_build()) {
+            return base_url('project/' . urlencode($slug) . '/');
+        }
         if (is_vercel()) {
             return base_url('project/' . urlencode($slug));
         }
@@ -68,7 +80,7 @@ if (!function_exists('project_url')) {
 
 if (!function_exists('route_url')) {
     /**
-     * Generate route URL — clean URLs on Vercel, .php URLs on XAMPP
+     * Generate route URL — clean URLs on Vercel / Cloudflare Pages, .php URLs on XAMPP
      */
     function route_url(string $route): string {
         $route = trim($route, '/');
@@ -77,11 +89,15 @@ if (!function_exists('route_url')) {
         $pathPart = explode('?', $route, 2)[0];
         $queryPart = isset(explode('?', $route, 2)[1]) ? '?' . explode('?', $route, 2)[1] : '';
 
-        // Strip .php from path for clean URL on Vercel
+        // Strip .php from path for clean URL
         $cleanPath = str_ends_with($pathPart, '.php') ? substr($pathPart, 0, -4) : $pathPart;
 
         if (empty($cleanPath) || $cleanPath === 'index') {
-            return base_url('');
+            return base_url($queryPart);
+        }
+
+        if (is_static_build()) {
+            return base_url($cleanPath . '/' . $queryPart);
         }
 
         if (is_vercel()) {
